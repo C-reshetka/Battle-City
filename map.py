@@ -1,6 +1,7 @@
 import pygame
 
 from Projectile import Projectile
+from Wall import Wall
 
 pygame.init()
 game_window_width = 500
@@ -29,6 +30,12 @@ is_running = True
 
 sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
+walls = pygame.sprite.Group()
+wall = Wall(0, 0)
+sprites.add(wall)
+walls.add(wall)
+bullets_pixel_interval_count = 0
+bullets_interval = 100
 
 while is_running:
     clock.tick()
@@ -53,18 +60,21 @@ while is_running:
         player_x -= player_speed if player_x - player_speed >= 0 else player_x
         is_left, is_right, is_down, is_up = 1, 0, 0, 0
     elif keys[pygame.K_SPACE]:
-        if is_left:
-            p = Projectile(player_x - 0.5 * player_width, player_y + 0.2 * player_height, -1, 0)
-        elif is_right:
-            p = Projectile(player_x + player_width, player_y + 0.2 * player_height, 1, 0)
-        elif is_up:
-            p = Projectile(player_x + 0.25 * player_width, player_y - 0.7 * player_height, 0, -1)
-        elif is_down:
-            p = Projectile(player_x + 0.25 * player_width, player_y + player_height, 0, 1)
-        bullets.add(p)
-        sprites.add(p)
+        if bullets_pixel_interval_count > bullets_interval:
+            if is_left:
+                p = Projectile(player_x - 0.5 * player_width, player_y + 0.2 * player_height, -1, 0)
+            elif is_right:
+                p = Projectile(player_x + player_width, player_y + 0.2 * player_height, 1, 0)
+            elif is_up:
+                p = Projectile(player_x + 0.25 * player_width, player_y - 0.7 * player_height, 0, -1)
+            elif is_down:
+                p = Projectile(player_x + 0.25 * player_width, player_y + player_height, 0, 1)
+            bullets.add(p)
+            sprites.add(p)
+            bullets_pixel_interval_count = 0
 
     game_window.blit(background_sprite, (0, 0))
+    bullets_pixel_interval_count += 1
 
     player_coordinates = (player_x, player_y)
     if is_up:
