@@ -16,21 +16,27 @@ class Player(pg.sprite.Sprite):
         self.y = self.rect.y
         self.is_left, self.is_right, self.is_down, self.is_up = 0, 0, 0, 1
         self.width, self.height = 25, 25
+        self.change_sprite_on_move = True
 
     def move(self, delta_x, delta_y):
         if delta_x > 0:
             self.rect.x += delta_x
-            self.image = self.player_sprite_right
+            if self.change_sprite_on_move:
+                self.image = self.player_sprite_right
             self.is_left, self.is_right, self.is_down, self.is_up = 0, 1, 0, 0
         elif delta_x < 0:
             self.rect.x += delta_x
-            self.image = self.player_sprite_left
+            if self.change_sprite_on_move:
+                self.image = self.player_sprite_left
             self.is_left, self.is_right, self.is_down, self.is_up = 1, 0, 0, 0
         elif delta_y > 0:
             self.rect.y += delta_y
-            self.image = self.player_sprite_down
+            if self.change_sprite_on_move:
+                self.image = self.player_sprite_down
             self.is_left, self.is_right, self.is_down, self.is_up = 0, 0, 1, 0
         elif delta_y < 0:
             self.rect.y += delta_y
-            self.image = self.player_sprite_up
+            if self.change_sprite_on_move:
+                self.image = self.player_sprite_up
             self.is_left, self.is_right, self.is_down, self.is_up = 0, 0, 0, 1
+

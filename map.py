@@ -1,8 +1,8 @@
 import pygame
 
+from Player import Player
 from Projectile import Projectile
 from Wall import Wall
-from Player import Player
 
 pygame.init()
 game_window_width = 500
@@ -25,9 +25,15 @@ bullets = pygame.sprite.Group()
 
 sprites.add(player)
 walls = pygame.sprite.Group()
+
 wall = Wall(0, 0)
 sprites.add(wall)
 walls.add(wall)
+
+wall = Wall(25, 25)
+sprites.add(wall)
+walls.add(wall)
+
 bullets_pixel_interval_count = 0
 bullets_interval = 100
 
@@ -39,18 +45,24 @@ while is_running:
 
     keys = pygame.key.get_pressed()
 
+    delta_x, delta_y = 0, 0
+
     if keys[pygame.K_UP]:
         if player.rect.y - player_speed >= 0:
             player.move(0, -player_speed)
+            delta_y = -player_speed
     elif keys[pygame.K_DOWN]:
         if player.rect.y + player_speed + player.height <= game_window_height:
             player.move(0, player_speed)
+            delta_y = player_speed
     elif keys[pygame.K_RIGHT]:
         if player.rect.x + player_speed + player.width <= game_window_width:
             player.move(player_speed, 0)
+            delta_x = player_speed
     elif keys[pygame.K_LEFT]:
         if player.rect.x - player_speed >= 0:
             player.move(-player_speed, 0)
+            delta_x = -player_speed
     elif keys[pygame.K_SPACE]:
         if bullets_pixel_interval_count > bullets_interval:
             if player.is_left:
@@ -65,13 +77,18 @@ while is_running:
             sprites.add(p)
             bullets_pixel_interval_count = 0
 
+    pygame.sprite.groupcollide(bullets, walls, True, False)
+
     game_window.blit(background_sprite, (0, 0))
     bullets_pixel_interval_count += 1
 
+    if pygame.sprite.spritecollide(player, walls, False):
+        player.change_sprite_on_move = False
+        player.move(-delta_x, -delta_y)
+        player.change_sprite_on_move = True
     for e in sprites:
         game_window.blit(e.image, (e.rect.x, e.rect.y))
     bullets.update()
-
     pygame.display.update()
 
 pygame.quit()
