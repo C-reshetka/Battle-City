@@ -55,5 +55,11 @@ class Player(pg.sprite.Sprite):
                 self.image = self.player_sprite_up
             self.is_left, self.is_right, self.is_down, self.is_up = 0, 0, 0, 1
 
+    def block_moving(self):
+        self.change_sprite_on_move = False
+        self.move(-self.last_delta_x, -self.last_delta_y)
+        self.can_shoot = False
+        self.change_sprite_on_move = True
+
     def update(self):
         self.last_projectile_distance += 1
