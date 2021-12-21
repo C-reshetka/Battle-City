@@ -1,5 +1,7 @@
 import pygame as pg
 
+from Projectile import Projectile
+
 
 class Player(pg.sprite.Sprite):
     def __init__(self, x, y):
@@ -63,3 +65,19 @@ class Player(pg.sprite.Sprite):
 
     def update(self):
         self.last_projectile_distance += 1
+
+    def shoot(self):
+        p = None
+        if self.is_left:
+            p = Projectile(self.rect.x - 0.5 * self.width,
+                           self.rect.y + 0.2 * self.height, -1, 0, "player")
+        elif self.is_right:
+            p = Projectile(self.rect.x + self.width,
+                           self.rect.y + 0.2 * self.height, 1, 0, "player")
+        elif self.is_up:
+            p = Projectile(self.rect.x + 0.25 * self.width,
+                           self.rect.y - 0.7 * self.height, 0, -1, "player")
+        elif self.is_down:
+            p = Projectile(self.rect.x + 0.25 * self.width,
+                           self.rect.y + self.height, 0, 1, "player")
+        return p

@@ -2,10 +2,18 @@ import random
 
 import pygame
 
+from Enemy import Enemy
 from Player import Player
 from Projectile import Projectile
-from Wall import Wall
-from Enemy import Enemy
+from UnbrokenWall import UnbrokenWall
+from ArmoredWall import ArmoredWall
+
+
+def display_sprites(sprites):
+    for e in sprites:
+        game_window.blit(e.image, (e.rect.x, e.rect.y))
+    all_sprites.update()
+    pygame.display.update()
 
 
 def process_keys(player_sprite, bullets_group, all_sprites_group):
@@ -26,19 +34,7 @@ def process_keys(player_sprite, bullets_group, all_sprites_group):
         if not player_sprite.can_shoot:
             return
         if player_sprite.last_projectile_distance > player_sprite.shooting_interval:
-            p = None
-            if player_sprite.is_left:
-                p = Projectile(player_sprite.rect.x - 0.5 * player_sprite.width,
-                               player_sprite.rect.y + 0.2 * player_sprite.height, -1, 0)
-            elif player_sprite.is_right:
-                p = Projectile(player_sprite.rect.x + player_sprite.width,
-                               player_sprite.rect.y + 0.2 * player_sprite.height, 1, 0)
-            elif player_sprite.is_up:
-                p = Projectile(player_sprite.rect.x + 0.25 * player_sprite.width,
-                               player_sprite.rect.y - 0.7 * player_sprite.height, 0, -1)
-            elif player_sprite.is_down:
-                p = Projectile(player_sprite.rect.x + 0.25 * player_sprite.width,
-                               player_sprite.rect.y + player_sprite.height, 0, 1)
+            p = player_sprite.shoot()
             player_sprite.last_projectile_distance = 0
             bullets_group.add(p)
             all_sprites_group.add(p)
@@ -58,55 +54,43 @@ player.speed = 1
 
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
-walls = pygame.sprite.Group()
+all_walls = pygame.sprite.Group()
+unbroken_walls = pygame.sprite.Group()
+armored_walls = pygame.sprite.Group()
 
 all_sprites.add(player)
 
-wall = Wall(25, 25)
-all_sprites.add(wall)
-walls.add(wall)
+w = ArmoredWall(25, 400)
+armored_walls.add(w)
+all_walls.add(w)
+all_sprites.add(w)
 
-wall = Wall(50, 25)
-all_sprites.add(wall)
-walls.add(wall)
+for i in range(20):
+    w = UnbrokenWall(0, i * 25)
+    all_sprites.add(w)
+    all_walls.add(w)
+    unbroken_walls.add(w)
 
-wall = Wall(100, 25)
-all_sprites.add(wall)
-walls.add(wall)
+    w = UnbrokenWall(i * 25, 0)
+    all_sprites.add(w)
+    all_walls.add(w)
+    unbroken_walls.add(w)
 
-wall = Wall(75, 25)
-all_sprites.add(wall)
-walls.add(wall)
+    w = UnbrokenWall(i * 25, 475)
+    all_sprites.add(w)
+    all_walls.add(w)
+    unbroken_walls.add(w)
 
-wall = Wall(25, 75)
-all_sprites.add(wall)
-walls.add(wall)
-
-wall = Wall(50, 75)
-all_sprites.add(wall)
-walls.add(wall)
-
-wall = Wall(100, 75)
-all_sprites.add(wall)
-walls.add(wall)
-
-wall = Wall(75, 75)
-all_sprites.add(wall)
-walls.add(wall)
-
-wall = Wall(25, 50)
-all_sprites.add(wall)
-walls.add(wall)
-
-wall = Wall(100, 50)
-all_sprites.add(wall)
-walls.add(wall)
+    w = UnbrokenWall(475, i * 25)
+    all_sprites.add(w)
+    all_walls.add(w)
+    unbroken_walls.add(w)
 
 player.shooting_interval = 100
 
 enemies = pygame.sprite.Group()
 
-e = Enemy(50, 50, -1)
+e = Enemy(50, 50, bullets, all_sprites, delta_x=-1, health=1)
 enemies.add(e)
 all_sprites.add(e)
 
@@ -121,11 +105,21 @@ while is_running:
     game_window.blit(background_sprite, (0, 0))
     process_keys(player, bullets, all_sprites)
 
-    pygame.sprite.groupcollide(bullets, walls, True, False)
-    if pygame.sprite.spritecollide(player, walls, False) or pygame.sprite.spritecollide(player, enemies, False):
+    for wall in pygame.sprite.groupcollide(all_walls, bullets, False, True):
+        if type(wall) is not ArmoredWall:
+            continue
+        wall.armor -= 1
+        if wall.armor < 1:
+            wall.kill()
+
+    enemies_collisions = pygame.sprite.spritecollide(player, enemies, False)
+
+    if pygame.sprite.spritecollide(player, all_walls, False) or enemies_collisions:
+        if enemies_collisions:
+            player.kill()
         player.block_moving()
 
-    for e in pygame.sprite.groupcollide(enemies, walls, False, False):
+    for e in pygame.sprite.groupcollide(enemies, all_walls, False, False):
         is_collision = True
         while True:
             if e.rect.x % 25 != 0:
@@ -146,14 +140,20 @@ while is_running:
                 else:
                     delta_x = 0
             e.move(delta_x, delta_y)
-            is_collision = pygame.sprite.spritecollide(e, walls, False)
+            is_collision = pygame.sprite.spritecollide(e, all_walls, False)
             if len(is_collision) == 0:
                 break
             e.move(-delta_x, -delta_y)
 
-    for e in all_sprites:
-        game_window.blit(e.image, (e.rect.x, e.rect.y))
-    all_sprites.update()
-    pygame.display.update()
+    for enemy, bullet in pygame.sprite.groupcollide(enemies, bullets, False, True).items():
+        if bullet[0].sender == "player":
+            enemy.health -= 1
+        if enemy.health < 1:
+            enemy.kill()
+
+
+    # display = threading.Thread(target=display_sprites(all_sprites))
+    # display.start()
+    display_sprites(all_sprites)
 
 pygame.quit()

@@ -1,7 +1,7 @@
 import pygame as pg
 
 
-class Wall(pg.sprite.Sprite):
+class UnbrokenWall(pg.sprite.Sprite):
     def __init__(self, x, y):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.transform.scale(pg.image.load('tmp/uncrashed_wall.png'), (25, 25))
