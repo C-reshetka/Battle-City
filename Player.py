@@ -1,15 +1,15 @@
 import pygame as pg
 
-from Projectile import Projectile
+from projectile import Projectile
 
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, health=1):
         pg.sprite.Sprite.__init__(self)
-        self.player_sprite_right = pg.transform.scale(pg.image.load('tmp/pl_right.png'), (25, 25))
-        self.player_sprite_left = pg.transform.scale(pg.image.load('tmp/pl_left.png'), (25, 25))
-        self.player_sprite_up = pg.transform.scale(pg.image.load('tmp/pl_up.png'), (25, 25))
-        self.player_sprite_down = pg.transform.scale(pg.image.load('tmp/pl_down.png'), (25, 25))
+        self.player_sprite_right = pg.transform.scale(pg.image.load('images/pl_right.png'), (25, 25))
+        self.player_sprite_left = pg.transform.scale(pg.image.load('images/pl_left.png'), (25, 25))
+        self.player_sprite_up = pg.transform.scale(pg.image.load('images/pl_up.png'), (25, 25))
+        self.player_sprite_down = pg.transform.scale(pg.image.load('images/pl_down.png'), (25, 25))
         self.image = self.player_sprite_up
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -25,6 +25,7 @@ class Player(pg.sprite.Sprite):
         self.last_projectile_distance = 0
         self.shooting_interval = 0
         self.can_shoot = True
+        self.health = health
 
     def move(self, delta_x, delta_y):
         self.can_shoot = True

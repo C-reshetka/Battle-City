@@ -4,7 +4,7 @@ import pygame as pg
 class Projectile(pg.sprite.Sprite):
     def __init__(self, x, y, delta_x, delta_y, sender):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(pg.image.load('tmp/projectile.png'), (15, 15))
+        self.image = pg.transform.scale(pg.image.load('images/projectile.png'), (15, 15))
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x

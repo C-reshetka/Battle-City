@@ -1,15 +1,15 @@
 import pygame as pg
 
-from Projectile import Projectile
+from projectile import Projectile
 
 
 class Enemy(pg.sprite.Sprite):
     def __init__(self, x, y, bullets, all_sprites, delta_x=0, delta_y=0, health=2):
         pg.sprite.Sprite.__init__(self)
-        self.enemy_sprite_right = pg.transform.scale(pg.image.load('tmp/enemy_right.png'), (25, 25))
-        self.enemy_sprite_left = pg.transform.scale(pg.image.load('tmp/enemy_left.png'), (25, 25))
-        self.enemy_sprite_up = pg.transform.scale(pg.image.load('tmp/enemy_up.png'), (25, 25))
-        self.enemy_sprite_down = pg.transform.scale(pg.image.load('tmp/enemy_down.png'), (25, 25))
+        self.enemy_sprite_right = pg.transform.scale(pg.image.load('images/enemy_right.png'), (25, 25))
+        self.enemy_sprite_left = pg.transform.scale(pg.image.load('images/enemy_left.png'), (25, 25))
+        self.enemy_sprite_up = pg.transform.scale(pg.image.load('images/enemy_up.png'), (25, 25))
+        self.enemy_sprite_down = pg.transform.scale(pg.image.load('images/enemy_down.png'), (25, 25))
         self.image = self.enemy_sprite_up
         self.rect = self.image.get_rect()
         self.width, self.height = 25, 25
