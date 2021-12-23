@@ -2,31 +2,28 @@ import random
 
 import pygame as pg
 
-import maps
 from armored_wall import ArmoredWall
 from enemy import Enemy
 from player import Player
+from projectile import Projectile
 from unbroken_wall import UnbrokenWall
 
 
 class Game:
     def __init__(self, map):
-        self.init_pygame()
         self.game_window = pg.display.set_mode((500, 550))
         self.background = Game.load_sprite("bg", 500, 500)
         self.game_over_screen = Game.load_sprite('game_over_screen', 500, 500)
+        self.win_screen = Game.load_sprite('win_screen', 500, 500)
         self.init_sprite_groups()
         self.player = None
         self.score = 0
         self.init_map(map)
         self.score_and_health_line = Game.load_sprite('green_scale', 500, 50)
         self.is_running = True
+        self.is_win = False
 
         self.main_loop()
-
-    def init_pygame(self):
-        pg.init()
-        pg.display.set_caption("Battle City")
 
     def init_sprite_groups(self):
         self.all_sprites = pg.sprite.Group()
@@ -76,14 +73,22 @@ class Game:
                 return
             if self.player.last_projectile_distance > self.player.shooting_interval:
                 p = self.player.shoot()
+                print(p)
                 self.player.last_projectile_distance = 0
-                self.bullets.add(p)
-                self.all_sprites.add(p)
+                self.register_sprite(p, self.bullets)
 
     def process_game_logic(self):
+        if not self.is_running:
+            return
+        if len(self.enemies) == 0:
+            self.is_running = False
+            self.is_win = True
+            return
+
         for wall in pg.sprite.groupcollide(self.all_walls, self.bullets, False, True):
             if type(wall) is not ArmoredWall:
                 continue
+            wall: ArmoredWall
             wall.armor -= 1
             if wall.armor < 1:
                 wall.kill()
@@ -114,20 +119,24 @@ class Game:
                         delta_y = 0
                     else:
                         delta_x = 0
+                e: Player
                 e.move(delta_x, delta_y)
                 is_collision = pg.sprite.spritecollide(e, self.all_walls, False)
                 if len(is_collision) == 0:
                     break
                 e.move(-delta_x, -delta_y)
 
-        for enemy, bullet in pg.sprite.groupcollide(self.enemies, self.bullets, False, True).items():
-            if bullet[0].sender == "player":
+        for enemy, bullets in pg.sprite.groupcollide(self.enemies, self.bullets, False, True).items():
+            enemy: Enemy
+            bullets: [Projectile]
+            if bullets[0].sender == "player":
                 enemy.health -= 1
             if enemy.health < 1:
                 enemy.kill()
                 self.score += 1
 
         for bullet in pg.sprite.spritecollide(self.player, self.bullets, True):
+            bullet: Projectile
             if bullet.sender == "enemy":
                 self.player.health -= 1
             if self.player.health < 1:
@@ -136,8 +145,12 @@ class Game:
 
     def draw(self):
         if not self.is_running:
-            self.draw_score_and_health()
-            self.game_over()
+            if self.is_win:
+                self.draw_score_and_health()
+                self.win()
+            else:
+                self.draw_score_and_health()
+                self.game_over()
             pg.display.flip()
             return
         self.game_window.blit(self.background, (0, 0))
@@ -193,5 +206,7 @@ class Game:
         self.game_window.blit(self.score_and_health_line, (0, 500))
         self.draw_score_and_health()
 
-
-Game(maps.map1)
+    def win(self):
+        self.game_window.blit(self.win_screen, (0, 0))
+        self.game_window.blit(self.score_and_health_line, (0, 500))
+        self.draw_score_and_health()
