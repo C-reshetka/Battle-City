@@ -1,3 +1,5 @@
+import random
+
 import pygame as pg
 
 from projectile import Projectile
@@ -6,10 +8,10 @@ from projectile import Projectile
 class Enemy(pg.sprite.Sprite):
     def __init__(self, x, y, bullets, all_sprites, delta_x=0, delta_y=0, health=2):
         pg.sprite.Sprite.__init__(self)
-        self.enemy_sprite_right = pg.transform.scale(pg.image.load('images/enemy_right.png'), (25, 25))
-        self.enemy_sprite_left = pg.transform.scale(pg.image.load('images/enemy_left.png'), (25, 25))
-        self.enemy_sprite_up = pg.transform.scale(pg.image.load('images/enemy_up.png'), (25, 25))
-        self.enemy_sprite_down = pg.transform.scale(pg.image.load('images/enemy_down.png'), (25, 25))
+        self.enemy_sprite_right = pg.transform.scale(pg.image.load('images/enemy_right.png'), (24, 24))
+        self.enemy_sprite_left = pg.transform.scale(pg.image.load('images/enemy_left.png'), (24, 24))
+        self.enemy_sprite_up = pg.transform.scale(pg.image.load('images/enemy_up.png'), (24, 24))
+        self.enemy_sprite_down = pg.transform.scale(pg.image.load('images/enemy_down.png'), (24, 24))
         self.image = self.enemy_sprite_up
         self.rect = self.image.get_rect()
         self.width, self.height = 25, 25
@@ -66,3 +68,24 @@ class Enemy(pg.sprite.Sprite):
             p = Projectile(self.rect.x + 0.25 * self.width,
                            self.rect.y + self.height, 0, 2, "enemy")
         return p
+
+    def change_direction_of_moving(self):
+        if self.rect.x % 25 != 0:
+            if self.rect.x % 25 > 12.5:
+                self.rect.x = (self.rect.x // 25) * 25 + 25
+            else:
+                self.rect.x = (self.rect.x // 25) * 25
+        if self.rect.y % 25 != 0:
+            if self.rect.y % 25 > 12.5:
+                self.rect.y = (self.rect.y // 25) * 25 + 25
+            else:
+                self.rect.y = (self.rect.y // 25) * 25
+        self.delta_x, self.delta_y = random.randrange(-1, 2), random.randrange(-1, 2)
+        while self.delta_x == self.delta_y == 0:
+            self.delta_x, self.delta_y = random.randrange(-1, 2), random.randrange(-1, 2)
+        if self.delta_x * self.delta_y != 0:
+            tmp = random.randrange(0, 2)
+            if tmp == 0:
+                self.delta_y = 0
+            else:
+                self.delta_x = 0

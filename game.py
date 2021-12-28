@@ -1,5 +1,3 @@
-import random
-
 import pygame as pg
 
 from armored_wall import ArmoredWall
@@ -100,31 +98,26 @@ class Game:
                 self.is_running = False
             self.player.block_moving()
 
+        for e in self.enemies:
+            tmp_group = pg.sprite.Group([a for a in self.enemies if a != e])
+            is_collision = pg.sprite.spritecollide(e, tmp_group, False)
+            for e1 in is_collision:
+                e: Enemy
+                e1: Enemy
+                e.delta_x, e.delta_y = -e.delta_x, -e.delta_y
+                e1.delta_x, e1.delta_y = -e1.delta_x, -e1.delta_y
+                e.move()
+                e1.move()
+
         for e in pg.sprite.groupcollide(self.enemies, self.all_walls, False, False):
-            while True:
-                if e.rect.x % 25 != 0:
-                    if e.rect.x % 25 > 12.5:
-                        e.rect.x = (e.rect.x // 25) * 25 + 25
-                    else:
-                        e.rect.x = (e.rect.x // 25) * 25
-                if e.rect.y % 25 != 0:
-                    if e.rect.y % 25 > 12.5:
-                        e.rect.y = (e.rect.y // 25) * 25 + 25
-                    else:
-                        e.rect.y = (e.rect.y // 25) * 25
-                delta_x, delta_y = random.randrange(-1, 2), random.randrange(-1, 2)
-                if delta_x * delta_y != 0:
-                    tmp = random.randrange(0, 2)
-                    if tmp == 0:
-                        delta_y = 0
-                    else:
-                        delta_x = 0
-                e: Player
-                e.move(delta_x, delta_y)
+            e: Enemy
+            while pg.sprite.spritecollide(e, self.all_walls, False):
+                e.change_direction_of_moving()
+                e.move(e.delta_x, e.delta_y)
                 is_collision = pg.sprite.spritecollide(e, self.all_walls, False)
                 if len(is_collision) == 0:
                     break
-                e.move(-delta_x, -delta_y)
+                e.move(-e.delta_x, -e.delta_y)
 
         for enemy, bullets in pg.sprite.groupcollide(self.enemies, self.bullets, False, True).items():
             enemy: Enemy
@@ -144,6 +137,7 @@ class Game:
                 self.is_running = False
 
     def draw(self):
+        #print('draw')
         if not self.is_running:
             if self.is_win:
                 self.draw_score_and_health()

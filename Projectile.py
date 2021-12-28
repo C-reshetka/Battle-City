@@ -19,5 +19,4 @@ class Projectile(pg.sprite.Sprite):
         self.rect.y += self.delta_y
         self.pixels_traversed += 1
         if self.rect.bottom < 0 or self.rect.right > 500 or self.rect.left < 0 or self.rect.top > 500:
-            print("p killed")
             self.kill()
