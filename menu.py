@@ -16,7 +16,9 @@ class Menu(pg.sprite.Sprite):
         self.bl1 = Button(image=Game.load_sprite('bl1', 100, 50), x=200, y=250, event=self.b1_click)
         self.bl2 = Button(image=Game.load_sprite('bl2', 100, 50), x=200, y=325, event=self.b2_click)
         self.bl3 = Button(image=Game.load_sprite('bl3', 100, 50), x=200, y=400, event=self.b3_click)
-        self.buttons = pg.sprite.Group([self.bl1, self.bl2, self.bl3])
+        self.bl4 = Button(image=Game.load_sprite('bl4', 100, 50), x=200, y=475, event=self.b4_click)
+        self.exit_button = Button(image=Game.load_sprite('eb', 50, 50), x=440, y=490, event=quit)
+        self.buttons = pg.sprite.Group([self.bl1, self.bl2, self.bl3, self.bl4, self.exit_button])
         self.main_loop()
 
     def main_loop(self):
@@ -42,6 +44,11 @@ class Menu(pg.sprite.Sprite):
     def b3_click(self):
         Game(maps.map_3)
         self.kill()
+
+    def b4_click(self):
+        Game(maps.map_4)
+        self.kill()
+
 
 
 

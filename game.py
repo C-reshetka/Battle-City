@@ -1,10 +1,26 @@
 import pygame as pg
 
+from armored_enemy import ArmoredEnemy
 from armored_wall import ArmoredWall
-from enemy import Enemy
+from headquarter import Headquarter
+from map_states import P, H, a, E, A, R, S, w, m
+from mirror_wall import MirrorWall
 from player import Player
 from projectile import Projectile
+from rapidfire_enemy import RapidfireEnemy
+from simple_enemy import SimpleEnemy
+from supershoot_enemy import SupershootEnemy
 from unbroken_wall import UnbrokenWall
+from water_wall import WaterWall
+
+all_sprites = pg.sprite.Group()
+bullets = pg.sprite.Group()
+all_walls = pg.sprite.Group()
+unbroken_walls = pg.sprite.Group()
+armored_walls = pg.sprite.Group()
+enemies = pg.sprite.Group()
+water_walls = pg.sprite.Group()
+mirror_walls = pg.sprite.Group()
 
 
 class Game:
@@ -13,8 +29,8 @@ class Game:
         self.background = Game.load_sprite("bg", 500, 500)
         self.game_over_screen = Game.load_sprite('game_over_screen', 500, 500)
         self.win_screen = Game.load_sprite('win_screen', 500, 500)
-        self.init_sprite_groups()
         self.player = None
+        self.headquarter = None
         self.score = 0
         self.init_map(map)
         self.score_and_health_line = Game.load_sprite('green_scale', 500, 50)
@@ -23,16 +39,9 @@ class Game:
 
         self.main_loop()
 
-    def init_sprite_groups(self):
-        self.all_sprites = pg.sprite.Group()
-        self.bullets = pg.sprite.Group()
-        self.all_walls = pg.sprite.Group()
-        self.unbroken_walls = pg.sprite.Group()
-        self.armored_walls = pg.sprite.Group()
-        self.enemies = pg.sprite.Group()
-
-    def register_sprite(self, sprite, *groups):
-        self.all_sprites.add(sprite)
+    @staticmethod
+    def register_sprite(sprite, *groups):
+        all_sprites.add(sprite)
         for g in groups:
             g.add(sprite)
 
@@ -53,37 +62,49 @@ class Game:
             if event.type == pg.QUIT or event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 quit()
 
-        keys = pg.key.get_pressed()
-        if keys[pg.K_UP]:
+        self.keys = pg.key.get_pressed()
+        if self.keys[pg.K_UP]:
             if self.player.rect.y - self.player.speed >= 0:
                 self.player.move(0, -self.player.speed)
-        elif keys[pg.K_DOWN]:
+        elif self.keys[pg.K_DOWN]:
             if self.player.rect.y + self.player.speed + self.player.height <= self.game_window.get_height():
                 self.player.move(0, self.player.speed)
-        elif keys[pg.K_RIGHT]:
+        elif self.keys[pg.K_RIGHT]:
             if self.player.rect.x + self.player.speed + self.player.width <= self.game_window.get_width():
                 self.player.move(self.player.speed, 0)
-        elif keys[pg.K_LEFT]:
+        elif self.keys[pg.K_LEFT]:
             if self.player.rect.x - self.player.speed >= 0:
                 self.player.move(-self.player.speed, 0)
-        elif keys[pg.K_SPACE]:
+        elif self.keys[pg.K_SPACE]:
             if not self.player.can_shoot:
                 return
             if self.player.last_projectile_distance > self.player.shooting_interval:
                 p = self.player.shoot()
                 print(p)
                 self.player.last_projectile_distance = 0
-                self.register_sprite(p, self.bullets)
+                self.register_sprite(p, bullets)
+
+        if self.is_pressed(pg.K_LCTRL, pg.K_h, pg.K_l, pg.K_t):
+            self.player.health = 100
+
+        if self.is_pressed(pg.K_LCTRL, pg.K_s, pg.K_t, pg.K_p):
+            for e in enemies:
+                e: SimpleEnemy
+                e.delta_x = 0
+                e.delta_y = 0
+
+        if self.is_pressed(pg.K_LCTRL, pg.K_s, pg.K_h, pg.K_t):
+            self.player.shooting_interval = 25
 
     def process_game_logic(self):
         if not self.is_running:
             return
-        if len(self.enemies) == 0:
+        if len(enemies) == 0:
             self.is_running = False
             self.is_win = True
             return
 
-        for wall in pg.sprite.groupcollide(self.all_walls, self.bullets, False, True):
+        for wall in pg.sprite.groupcollide(all_walls, bullets, False, True):
             if type(wall) is not ArmoredWall:
                 continue
             wall: ArmoredWall
@@ -91,44 +112,77 @@ class Game:
             if wall.armor < 1:
                 wall.kill()
 
-        if pg.sprite.spritecollide(self.player, self.all_walls, False) or pg.sprite.spritecollide(self.player,
-                                                                                                  self.enemies, False):
-            if pg.sprite.spritecollide(self.player, self.enemies, False):
+        if pg.sprite.spritecollide(self.player, all_walls, False) or pg.sprite.spritecollide(self.player,
+                                                                                             enemies, False):
+            if pg.sprite.spritecollide(self.player, enemies, False):
                 self.player.kill()
                 self.is_running = False
             self.player.block_moving()
 
-        for e in self.enemies:
-            tmp_group = pg.sprite.Group([a for a in self.enemies if a != e])
+        for e in enemies:
+            tmp_group = pg.sprite.Group([a for a in enemies if a != e])
             is_collision = pg.sprite.spritecollide(e, tmp_group, False)
             for e1 in is_collision:
-                e: Enemy
-                e1: Enemy
+                e: SimpleEnemy
+                e1: SimpleEnemy
                 e.delta_x, e.delta_y = -e.delta_x, -e.delta_y
                 e1.delta_x, e1.delta_y = -e1.delta_x, -e1.delta_y
                 e.move()
                 e1.move()
 
-        for e in pg.sprite.groupcollide(self.enemies, self.all_walls, False, False):
-            e: Enemy
-            while pg.sprite.spritecollide(e, self.all_walls, False):
+        for e in pg.sprite.groupcollide(enemies, all_walls, False, False):
+            e: SimpleEnemy
+            while pg.sprite.spritecollide(e, all_walls, False):
                 e.change_direction_of_moving()
                 e.move(e.delta_x, e.delta_y)
-                is_collision = pg.sprite.spritecollide(e, self.all_walls, False)
+                is_collision = pg.sprite.spritecollide(e, all_walls, False)
                 if len(is_collision) == 0:
                     break
                 e.move(-e.delta_x, -e.delta_y)
 
-        for enemy, bullets in pg.sprite.groupcollide(self.enemies, self.bullets, False, True).items():
-            enemy: Enemy
-            bullets: [Projectile]
-            if bullets[0].sender == "player":
+        for e in pg.sprite.groupcollide(enemies, water_walls, False, False):
+            e: SimpleEnemy
+            while pg.sprite.spritecollide(e, water_walls, False):
+                e.change_direction_of_moving()
+                e.move(e.delta_x, e.delta_y)
+                is_collision = pg.sprite.spritecollide(e, water_walls, False)
+                if len(is_collision) == 0:
+                    break
+                e.move(-e.delta_x, -e.delta_y)
+
+        if pg.sprite.spritecollide(self.player, water_walls, False) or pg.sprite.spritecollide(self.player,
+                                                                                               mirror_walls, False):
+            self.player.block_moving()
+
+        for e in pg.sprite.groupcollide(enemies, mirror_walls, False, False):
+            e: SimpleEnemy
+            while pg.sprite.spritecollide(e, mirror_walls, False):
+                e.change_direction_of_moving()
+                e.move(e.delta_x, e.delta_y)
+                is_collision = pg.sprite.spritecollide(e, mirror_walls, False)
+                if len(is_collision) == 0:
+                    break
+                e.move(-e.delta_x, -e.delta_y)
+
+        for w, b in pg.sprite.groupcollide(mirror_walls, bullets, False, False).items():
+            b = b[0]
+            w: MirrorWall
+            b: Projectile
+            w.health -= 1
+            b.delta_x, b.delta_y = -b.delta_x, -b.delta_y
+            if w.health < 1:
+                w.kill()
+
+        for enemy, b in pg.sprite.groupcollide(enemies, bullets, False, True).items():
+            enemy: SimpleEnemy
+            b: [Projectile]
+            if b[0].sender == "player":
                 enemy.health -= 1
             if enemy.health < 1:
                 enemy.kill()
                 self.score += 1
 
-        for bullet in pg.sprite.spritecollide(self.player, self.bullets, True):
+        for bullet in pg.sprite.spritecollide(self.player, bullets, True):
             bullet: Projectile
             if bullet.sender == "enemy":
                 self.player.health -= 1
@@ -136,8 +190,27 @@ class Game:
                 self.player.kill()
                 self.is_running = False
 
+        if pg.sprite.spritecollide(self.headquarter, pg.sprite.GroupSingle(self.player), False):
+            self.player.block_moving()
+
+        for e in pg.sprite.spritecollide(self.headquarter, bullets, True):
+            self.headquarter: Headquarter
+            self.headquarter.health -= 1
+            if self.headquarter.health < 1:
+                self.headquarter.kill()
+                self.is_running = False
+
+        for e in pg.sprite.spritecollide(self.headquarter, enemies, False):
+            e: SimpleEnemy
+            while pg.sprite.spritecollide(e, pg.sprite.GroupSingle(self.headquarter), False):
+                e.change_direction_of_moving()
+                e.move(e.delta_x, e.delta_y)
+                is_collision = pg.sprite.spritecollide(e, pg.sprite.GroupSingle(self.headquarter), False)
+                if len(is_collision) == 0:
+                    break
+                e.move(-e.delta_x, -e.delta_y)
+
     def draw(self):
-        #print('draw')
         if not self.is_running:
             if self.is_win:
                 self.draw_score_and_health()
@@ -149,20 +222,20 @@ class Game:
             return
         self.game_window.blit(self.background, (0, 0))
         self.game_window.blit(self.score_and_health_line, (0, 500))
-        for e in self.all_sprites:
+        for e in all_sprites:
             self.game_window.blit(e.image, (e.rect.x, e.rect.y))
         self.draw_score_and_health()
         pg.display.flip()
-        self.all_sprites.update()
+        all_sprites.update()
 
     def init_map(self, map):
         for i in range(20):
             for j in range(20):
                 if map[i][j] == 1:
                     wall = UnbrokenWall(j * 25, i * 25)
-                    self.register_sprite(wall, self.all_walls, self.unbroken_walls)
+                    self.register_sprite(wall, all_walls, unbroken_walls)
 
-                elif map[i][j] == 9:
+                elif map[i][j] == P:
                     if self.player is not None:
                         raise ValueError
                     self.player = Player(j * 25, i * 25, health=5)
@@ -170,13 +243,38 @@ class Game:
                     self.player.shooting_interval = 100
                     self.register_sprite(self.player)
 
-                elif map[i][j] == 2:
+                elif map[i][j] == a:
                     wall = ArmoredWall(j * 25, i * 25)
-                    self.register_sprite(wall, self.all_walls, self.armored_walls)
+                    self.register_sprite(wall, all_walls, armored_walls)
 
-                elif map[i][j] == 3:
-                    e = Enemy(j * 25, i * 25, self.bullets, self.all_sprites, -1, 0, 2)
-                    self.register_sprite(e, self.enemies)
+                elif map[i][j] == E:
+                    e = SimpleEnemy(j * 25, i * 25, -1, 0, 2)
+                    self.register_sprite(e, enemies)
+
+                elif map[i][j] == H:
+                    e = Headquarter(j * 25, i * 25)
+                    self.register_sprite(e)
+                    self.headquarter = e
+
+                elif map[i][j] == A:
+                    e = ArmoredEnemy(j * 25, i * 25, -1, 0)
+                    self.register_sprite(e, enemies)
+
+                elif map[i][j] == R:
+                    e = RapidfireEnemy(j * 25, i * 25, -1, 0)
+                    self.register_sprite(e, enemies)
+
+                elif map[i][j] == S:
+                    e = SupershootEnemy(j * 25, i * 25, -1, 0)
+                    self.register_sprite(e, enemies)
+
+                elif map[i][j] == w:
+                    e = WaterWall(j * 25, i * 25)
+                    self.register_sprite(e, water_walls)
+
+                elif map[i][j] == m:
+                    e = MirrorWall(j * 25, i * 25)
+                    self.register_sprite(e, mirror_walls)
 
     def draw_score_and_health(self):
         font = pg.font.Font(pg.font.match_font('arial'), 32)
@@ -184,17 +282,22 @@ class Game:
             self.player.health = 0
         score = font.render('Score:  ' + str(self.score), True, (0, 0, 0))
         text_rect = score.get_rect()
-        text_rect.topleft = (0, 505)
+        text_rect.topleft = (2, 505)
         self.game_window.blit(score, text_rect)
 
-        health = font.render('Health:  ' + str(self.player.health), True, (0, 0, 0))
-        text_rect = score.get_rect()
+        p_health = font.render('Health:  ' + str(self.player.health), True, (0, 0, 0))
+        text_rect = p_health.get_rect()
         text_rect.topleft = (150, 505)
-        self.game_window.blit(health, text_rect)
+        self.game_window.blit(p_health, text_rect)
+
+        h_health = font.render('Headquarter:  ' + str(self.headquarter.health), True, (0, 0, 0))
+        text_rect = h_health.get_rect()
+        text_rect.topleft = (298, 505)
+        self.game_window.blit(h_health, text_rect)
 
     def game_over(self):
-        if len(self.enemies) > 0:
-            for e in self.enemies:
+        if len(enemies) > 0:
+            for e in enemies:
                 e.kill()
         self.game_window.blit(self.game_over_screen, (0, 0))
         self.game_window.blit(self.score_and_health_line, (0, 500))
@@ -204,3 +307,9 @@ class Game:
         self.game_window.blit(self.win_screen, (0, 0))
         self.game_window.blit(self.score_and_health_line, (0, 500))
         self.draw_score_and_health()
+
+    def is_pressed(self, *keys_to_check):
+        for k in keys_to_check:
+            if not self.keys[k]:
+                return False
+        return True

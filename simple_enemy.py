@@ -3,10 +3,11 @@ import random
 import pygame as pg
 
 from projectile import Projectile
+import game
 
 
-class Enemy(pg.sprite.Sprite):
-    def __init__(self, x, y, bullets, all_sprites, delta_x=0, delta_y=0, health=2):
+class SimpleEnemy(pg.sprite.Sprite):
+    def __init__(self, x, y, delta_x=0, delta_y=0, health=2):
         pg.sprite.Sprite.__init__(self)
         self.enemy_sprite_right = pg.transform.scale(pg.image.load('images/enemy_right.png'), (24, 24))
         self.enemy_sprite_left = pg.transform.scale(pg.image.load('images/enemy_left.png'), (24, 24))
@@ -22,8 +23,6 @@ class Enemy(pg.sprite.Sprite):
         self.health = health
         self.shooting_interval = 100
         self.shooting_time = 0
-        self.bullets = bullets
-        self.all_sprites = all_sprites
 
     def move(self, delta_x=0, delta_y=0):
         if delta_x == delta_y == 0:
@@ -49,9 +48,8 @@ class Enemy(pg.sprite.Sprite):
         self.shooting_time += 1
         if self.shooting_time > self.shooting_interval:
             self.shooting_time = 0
-            p = self.shoot()
-            self.all_sprites.add(p)
-            self.bullets.add(p)
+            for p in self.shoot():
+                game.Game.register_sprite(p, game.bullets)
 
     def shoot(self):
         p = None
@@ -67,7 +65,7 @@ class Enemy(pg.sprite.Sprite):
         elif self.image == self.enemy_sprite_down:
             p = Projectile(self.rect.x + 0.25 * self.width,
                            self.rect.y + self.height, 0, 2, "enemy")
-        return p
+        return [p]
 
     def change_direction_of_moving(self):
         if self.rect.x % 25 != 0:

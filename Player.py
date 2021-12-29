@@ -69,21 +69,16 @@ class Player(pg.sprite.Sprite):
 
     def shoot(self):
         p = None
-        print("shoooooooot")
         if self.is_left:
-            print('left')
             p = Projectile(self.rect.x - 0.6 * self.width,
                            self.rect.y + 0.2 * self.height, -1, 0, "player")
         elif self.is_right:
-            print("right")
             p = Projectile(self.rect.x + self.width,
                            self.rect.y + 0.2 * self.height, 1, 0, "player")
         elif self.is_up:
-            print('up')
             p = Projectile(self.rect.x + 0.25 * self.width,
                            self.rect.y - 0.7 * self.height, 0, -1, "player")
         elif self.is_down:
-            print('down')
             p = Projectile(self.rect.x + 0.25 * self.width,
                            self.rect.y + self.height, 0, 1, "player")
         return p
