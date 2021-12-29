@@ -1,8 +1,8 @@
-import simple_enemy
+import enemies.simple_enemy
 import game
 
 
-class RapidfireEnemy(simple_enemy.SimpleEnemy):
+class RapidfireEnemy(enemies.simple_enemy.SimpleEnemy):
     def __init__(self, x, y, delta_x=0, delta_y=0):
         super().__init__(x, y, delta_x, delta_y)
         self.enemy_sprite_left = game.Game.load_sprite('re_left', 24, 24)

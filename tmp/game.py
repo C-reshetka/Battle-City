@@ -200,16 +200,15 @@ class Game(pg.sprite.Sprite):
                 self.player.kill()
                 self.is_running = False
 
-        if self.headquarter is not None and pg.sprite.spritecollide(self.headquarter, pg.sprite.GroupSingle(self.player), False):
+        if pg.sprite.spritecollide(self.headquarter, pg.sprite.GroupSingle(self.player), False):
             self.player.block_moving()
 
-        if self.headquarter is not None:
-            for e in pg.sprite.spritecollide(self.headquarter, bullets, True):
-                self.headquarter: Headquarter
-                self.headquarter.health -= 1
-                if self.headquarter.health < 1:
-                    self.headquarter.kill()
-                    self.is_running = False
+        for e in pg.sprite.spritecollide(self.headquarter, bullets, True):
+            self.headquarter: Headquarter
+            self.headquarter.health -= 1
+            if self.headquarter.health < 1:
+                self.headquarter.kill()
+                self.is_running = False
 
         for e in pg.sprite.spritecollide(self.headquarter, enemies, False):
             e: SimpleEnemy
@@ -240,8 +239,6 @@ class Game(pg.sprite.Sprite):
         for e in all_sprites:
             self.game_window.blit(e.image, (e.rect.x, e.rect.y))
         self.draw_score_and_health()
-        if self.player.armor > 0:
-            self.game_window.blit(self.load_sprite('shield', 20, 20), (self.player.rect.x + 2, self.player.rect.y + 2))
         pg.display.flip()
         all_sprites.update()
 
@@ -302,20 +299,20 @@ class Game(pg.sprite.Sprite):
                     self.register_sprite(e, bonuses)
 
     def draw_score_and_health(self):
-        f = pg.font.Font(pg.font.match_font('arial'), 32)
+        font = pg.font.Font(pg.font.match_font('arial'), 32)
         if not self.is_running:
             self.player.health = 0
-        score = f.render('Score:  ' + str(self.score), True, (0, 0, 0))
+        score = font.render('Score:  ' + str(self.score), True, (0, 0, 0))
         text_rect = score.get_rect()
         text_rect.topleft = (2, 505)
         self.game_window.blit(score, text_rect)
 
-        p_health = f.render('Health:  ' + str(self.player.health), True, (0, 0, 0))
+        p_health = font.render('Health:  ' + str(self.player.health), True, (0, 0, 0))
         text_rect = p_health.get_rect()
         text_rect.topleft = (150, 505)
         self.game_window.blit(p_health, text_rect)
 
-        h_health = f.render('Headquarter:  ' + str(self.headquarter.health), True, (0, 0, 0))
+        h_health = font.render('Headquarter:  ' + str(self.headquarter.health), True, (0, 0, 0))
         text_rect = h_health.get_rect()
         text_rect.topleft = (298, 505)
         self.game_window.blit(h_health, text_rect)

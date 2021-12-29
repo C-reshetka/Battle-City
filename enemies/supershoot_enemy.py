@@ -1,9 +1,9 @@
 import game
-import simple_enemy
+import enemies.simple_enemy
 from projectile import Projectile
 
 
-class SupershootEnemy(simple_enemy.SimpleEnemy):
+class SupershootEnemy(enemies.simple_enemy.SimpleEnemy):
     def __init__(self, x, y, delta_x=0, delta_y=0):
         super().__init__(x, y, delta_x, delta_y)
         self.enemy_sprite_left = game.Game.load_sprite('ss_left', 24, 24)

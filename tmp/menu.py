@@ -16,9 +16,7 @@ class Menu(pg.sprite.Sprite):
         bl3 = Button(image=Game.load_sprite('bl3', 100, 50), x=200, y=400, event=self.b3_click)
         bl4 = Button(image=Game.load_sprite('bl4', 100, 50), x=200, y=475, event=self.b4_click)
         exit_button = Button(image=Game.load_sprite('eb', 50, 50), x=440, y=490, event=quit)
-        design_button = Button(image=Game.load_sprite('design_button', 100, 50), x=350, y=250, event=self.design_level)
-        bc = Button(image=Game.load_sprite('bml', 100, 50), x=350, y=325, event=self.bc_click)
-        self.buttons = pg.sprite.Group([bl1, bl2, bl3, bl4, bc, exit_button, design_button])
+        self.buttons = pg.sprite.Group([bl1, bl2, bl3, bl4, exit_button])
         self.main_loop()
 
     def main_loop(self):
@@ -50,17 +48,7 @@ class Menu(pg.sprite.Sprite):
 
     def b4_click(self):
         self.buttons = None
-        Game(maps.map_4)
-        self.kill()
-
-    def bc_click(self):
-        self.buttons = None
-        Game(maps.map_c)
-        self.kill()
-
-    def design_level(self):
-        self.buttons = None
-        import level_designer
+        Game(maps.example)
         self.kill()
 
 
