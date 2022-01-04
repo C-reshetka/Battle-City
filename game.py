@@ -1,18 +1,18 @@
 import pygame as pg
 
 import menu
-from bonus_abstract import Bonus
+from bonuses.bonus_abstract import Bonus
 from button import Button
 from enemies.armored_enemy import ArmoredEnemy
 from enemies.rapidfire_enemy import RapidfireEnemy
 from enemies.simple_enemy import SimpleEnemy
 from enemies.supershoot_enemy import SupershootEnemy
 from headquarter import Headquarter
-from heart_bonus import HeartBonus
+from bonuses.heart_bonus import HeartBonus
 from map_states import P, H, a, E, A, R, S, w, m, h, s
 from player import Player
 from projectile import Projectile
-from shield_bonus import ShieldBonus
+from bonuses.shield_bonus import ShieldBonus
 from walls.armored_wall import ArmoredWall
 from walls.mirror_wall import MirrorWall
 from walls.unbroken_wall import UnbrokenWall

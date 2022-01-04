@@ -1,7 +1,7 @@
 import pygame as pg
 
 import game
-from bonus_abstract import Bonus
+from bonuses.bonus_abstract import Bonus
 from player import Player
 
 

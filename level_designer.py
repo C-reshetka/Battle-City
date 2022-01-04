@@ -3,10 +3,10 @@ import sys
 from PyQt5.QtCore import Qt, QMimeData
 from PyQt5.QtGui import QDrag, QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QGridLayout, QPushButton
-from map_states import H, P, u, a, E, w, m, R, S, A, h, s
 
 import maps
-from menu import Menu
+from map_states import H, P, u, a, E, m, R, S, A, h, s
+import menu
 
 
 class Designer(QWidget):
@@ -54,7 +54,7 @@ class Designer(QWidget):
         label = self.create_drag_picture('shield')
         self.layout.addWidget(label, 21, 11)
         self.create_btn = QPushButton('Create!', self)
-        self.layout.addWidget(self.create_btn, 20, 13, 20, 13)
+        self.layout.addWidget(self.create_btn, 21, 13, 21, 13)
         self.create_btn.clicked.connect(self.save_level)
 
     def create_drag_picture(self, name):
@@ -67,6 +67,7 @@ class Designer(QWidget):
         return label
 
     def save_level(self):
+        is_player, is_flag, is_enemy = 0, 0, 0
         for i in range(20):
             for j in range(20):
                 if i == 0 or j == 0 or i == 19 or j == 19:
@@ -78,8 +79,10 @@ class Designer(QWidget):
                     maps.map_c[i][j] = 0
                 elif img == 'pl_up':
                     maps.map_c[i][j] = P
+                    is_player = 1
                 elif img == 'headquartes':
                     maps.map_c[i][j] = H
+                    is_flag = 1
                 elif img == 'uncrashed_wall':
                     maps.map_c[i][j] = u
                 elif img == 'wall':
@@ -88,18 +91,24 @@ class Designer(QWidget):
                     maps.map_c[i][j] = m
                 elif img == 'enemy_up':
                     maps.map_c[i][j] = E
+                    is_enemy = 1
                 elif img == 're_up':
                     maps.map_c[i][j] = R
+                    is_enemy = 1
                 elif img == 'ae_up':
                     maps.map_c[i][j] = A
+                    is_enemy = 1
                 elif img == 'ss_up':
                     maps.map_c[i][j] = S
+                    is_enemy = 1
                 elif img == 'heart':
                     maps.map_c[i][j] = h
                 elif img == 'shield':
                     maps.map_c[i][j] = s
+        if not (is_enemy and is_flag and is_player):
+            return
         self.close()
-        Menu()
+        menu.Menu()
 
 
 class DragLabel(QLabel):
@@ -153,7 +162,8 @@ class DropLabel(QLabel):
         event.acceptProposedAction()
 
 
-app = QApplication(sys.argv)
-view = Designer()
-view.show()
-sys.exit(app.exec_())
+def start():
+    app = QApplication(sys.argv)
+    view = Designer()
+    view.show()
+    sys.exit(app.exec_())

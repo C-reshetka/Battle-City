@@ -3,6 +3,7 @@ import pygame as pg
 import maps
 from game import Game
 from button import Button
+import level_designer
 
 
 class Menu(pg.sprite.Sprite):
@@ -60,7 +61,7 @@ class Menu(pg.sprite.Sprite):
 
     def design_level(self):
         self.buttons = None
-        import level_designer
+        level_designer.start()
         self.kill()
 
 
